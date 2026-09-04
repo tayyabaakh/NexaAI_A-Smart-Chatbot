@@ -18,3 +18,8 @@ docx2txt
 langchain-tavily
 tavily-python
 sqlalchemy
+aiosqlite
+langchain-groq
+pytesseract pdf2image pillow
+@huggingface/inference
+huggingface_hub
