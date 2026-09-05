@@ -39,7 +39,7 @@ export interface UploadResponse {
 // --- API Service Methods ---
 
 export async function generateImage(prompt: string): Promise<string> {
-  const response = await fetch('http://localhost:8000/generate-image', {
+  const response = await fetch(`${BASE_URL}/generate-image`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json', // ✅ CORRECT
