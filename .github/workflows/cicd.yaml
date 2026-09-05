@@ -52,7 +52,7 @@ jobs:
       - name: Build and push Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
+          ECR_REPOSITORY: nexaai-backend
           IMAGE_TAG: latest
         run: |
           IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
@@ -79,7 +79,7 @@ jobs:
       - name: Pull latest backend image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
+          ECR_REPOSITORY: nexaai-backend
           IMAGE_TAG: latest
         run: |
           docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
@@ -92,7 +92,7 @@ jobs:
       - name: Run backend container
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
+          ECR_REPOSITORY: nexaai-backend
           IMAGE_TAG: latest
         run: |
           docker run -d \
