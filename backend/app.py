@@ -83,8 +83,12 @@ def get_thinking_status(tool_name: str) -> str:
     return TOOL_THINKING_MAP.get(tool_name.lower(), f"⚙️ Executing {tool_name}...")
 
 
-@app.get("/")
-async def root():
+# @app.get("/")
+# async def root():
+#     return {"status": "online", "message": "NexaAI Backend API is running"}
+
+@app.get("/health")
+async def health_check():
     return {"status": "online", "message": "NexaAI Backend API is running"}
 
 # Initialize Hugging Face Inference Client (uses HF_TOKEN from .env)
@@ -351,20 +355,25 @@ async def chat_stream(request: ChatRequest):
     )
 
 
-# Serve static frontend files
-frontend_dist = os.path.join(os.path.dirname(__file__), "../frontend/dist")
+# --- 2. Serve Static Frontend Files ---
+frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "../frontend/dist"))
 
 if os.path.exists(frontend_dist):
-    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
-        # Serve index.html for React SPA routing
-        file_path = os.path.join(frontend_dist, full_path)
-        if os.path.exists(file_path) and os.path.isfile(file_path):
-            return FileResponse(file_path)
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+        # Prevent API paths from returning index.html
+        if full_path in ["health", "conversations", "generate-image", "upload"] or full_path.startswith("history/") or full_path.startswith("chat/"):
+            return JSONResponse({"error": "Not Found"}, status_code=404)
 
+        file_path = os.path.join(frontend_dist, full_path)
+        if full_path != "" and os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
 
 if __name__ == "__main__":
     uvicorn.run(
