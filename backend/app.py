@@ -83,7 +83,7 @@ def get_thinking_status(tool_name: str) -> str:
     return TOOL_THINKING_MAP.get(tool_name.lower(), f"⚙️ Executing {tool_name}...")
 
 
-@app.get("/")
+@app.get("/health")
 async def root():
     return {"status": "online", "message": "NexaAI Backend API is running"}
 
