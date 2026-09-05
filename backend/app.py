@@ -19,6 +19,8 @@ from fastapi.responses import StreamingResponse, JSONResponse
 
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from agent import get_agent
 from database import (
@@ -54,6 +56,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="NexaAI Backend API", lifespan=lifespan)
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -65,6 +68,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 TOOL_THINKING_MAP = {
     "tavily_search_results_json": "🌐 Searching the web...",
@@ -345,6 +349,21 @@ async def chat_stream(request: ChatRequest):
             "X-Accel-Buffering": "no"
         }
     )
+
+
+# Serve static frontend files
+frontend_dist = os.path.join(os.path.dirname(__file__), "../frontend/dist")
+
+if os.path.exists(frontend_dist):
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_react_app(full_path: str):
+        # Serve index.html for React SPA routing
+        file_path = os.path.join(frontend_dist, full_path)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
 
 
 if __name__ == "__main__":
