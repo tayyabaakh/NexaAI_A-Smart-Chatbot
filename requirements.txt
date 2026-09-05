@@ -20,6 +20,8 @@ tavily-python
 sqlalchemy
 aiosqlite
 langchain-groq
-pytesseract pdf2image pillow
+pytesseract
+ pdf2image
+  pillow
 @huggingface/inference
 huggingface_hub
