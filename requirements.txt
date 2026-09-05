@@ -21,7 +21,6 @@ sqlalchemy
 aiosqlite
 langchain-groq
 pytesseract
- pdf2image
-  pillow
-@huggingface/inference
+pdf2image
+pillow
 huggingface_hub
