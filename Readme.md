@@ -1,64 +1,171 @@
-# NexaAI — Smart Chatbot Dependencies
+# NexaAI-A Smart Chatbot
 
-This repository contains the backend and frontend configurations for **NexaAI**, a full-stack, AI-powered smart chatbot application.
+NexaAI is a full-stack AI chatbot built with Python and React. It combines a LangGraph-based agent, document-aware retrieval, web search, and image generation to support conversational Q&A, chat history, thread-based memory, and uploaded document analysis in a single interface.
 
----
+## ✨ Features
 
-## 🐍 Backend Dependencies (Python & FastAPI)
+- Chat with a streaming AI agent using Groq-hosted LLM models.
+- Upload PDF, DOCX, TXT, MD, PY, and CSV files for document-grounded Q&A via a ChromaDB-backed RAG pipeline.
+- Search the web with Tavily for current or time-sensitive information.
+- Keep memory per conversation thread using SQLite-backed persistent storage.
+- Use built-in tools for calculator, weather, and stock quote lookups.
+- Generate AI images from text prompts using Hugging Face Inference.
+- Maintain separate conversation threads and histories in the frontend sidebar.
+- Support real-time streaming responses and live thinking states in the UI.
 
-These packages manage the backend API, Large Language Model (LLM) agent workflows, vector embeddings, document parsing, and database storage.
+## 🛠️ Tech Stack
 
-### 🌐 Web Framework & Server
-* **`fastapi`**: Modern, fast web framework for building RESTful APIs with Python.
-* **`uvicorn`**: High-performance ASGI server used to serve the FastAPI backend.
-* **`jinja2`**: Templating engine for rendering dynamic HTML templates if needed.
-* **`python-multipart`**: Streaming multipart parser for handling file uploads in FastAPI.
-* **`python-dotenv`**: Reads key-value pairs from a `.env` file to set environment variables securely.
+### Frontend
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Markdown + KaTeX support for rich chat rendering
+- Axios for API calls
 
-### 🤖 AI Agents & Workflow Orchestration
-* **`langchain`**: Core framework for building LLM-powered applications, tools, and chains.
-* **`langchain-google-genai`**: Official LangChain integration for Google Gemini models.
-* **`langchain-core`**: Standard interface and base abstractions for the LangChain ecosystem.
-* **`langgraph`**: Graph-based framework built on LangChain to build stateful multi-agent workflows.
-* **`langchain-text-splitters`**: Tools for chunking long documents into smaller segments for vector embeddings.
-* **`langgraph-checkpoint-sqlite`**: SQLite persistence checkpointer for preserving agent conversation state across sessions.
+### Backend
+- Python
+- FastAPI
+- Uvicorn
+- LangGraph
+- LangChain
+- Pydantic
 
-### 📚 Vector Database & Document Processing
-* **`langchain-chroma`**: LangChain vector store integration wrapper for ChromaDB.
-* **`chromadb`**: Embeddings database for vector search and fast similarity retrieval.
-* **`pypdf`**: Python library for extracting text from PDF files.
-* **`docx2txt`**: Extraction utility for converting Microsoft Word (`.docx`) files into plain text.
+### Database
+- SQLite
+- SQLAlchemy
+- ChromaDB
 
-### 🔍 External Search & APIs
-* **`langchain-tavily`**: LangChain integration wrapper for the Tavily Search API.
-* **`tavily-python`**: Official Python client wrapper for AI-optimized web searches using Tavily.
+### AI / ML
+- LangChain Groq integration
+- Google Generative AI embeddings
+- Hugging Face Inference
+- Tavily Search
+- PDF / DOCX / text extraction utilities
 
-### 🗄️ Database Management
-* **`sqlalchemy`**: SQL Toolkit and Object-Relational Mapping (ORM) framework for database handling.
+### APIs / Tools
+- Groq API for chat generation
+- Hugging Face image generation endpoint
+- Tavily Search API
+- OpenWeather API
+- Alpha Vantage API
 
----
+## 🏗️ Project Architecture
 
-## ⚡ Frontend Dependencies (React & Tailwind CSS)
+The frontend is a React app that sends chat and upload requests to the FastAPI backend. The backend initializes a LangGraph agent, manages tool execution, stores thread history, and serves streaming responses with SSE. Uploaded files are parsed, chunked, embedded with Google embeddings, and stored in ChromaDB for retrieval-augmented generation. SQLite stores conversation metadata and messages.
 
-These packages power the user interface, API calls, and styling for the client-side application.
+```mermaid
+flowchart LR
+    U[User] --> F[React Frontend]
+    F -->|HTTP / SSE| B[FastAPI Backend]
+    B --> A[LangGraph Agent]
+    A --> T[Tools: Tavily, Weather, Stock, Memory, Calculator]
+    B --> R[RAG Pipeline]
+    R --> C[ChromaDB]
+    B --> D[SQLite Database]
+    B --> H[Hugging Face Image API]
+    U -->|Upload file| B
+```
 
-### 🎨 Core UI Framework & Styling
-* **`react`**: JavaScript library for building component-based user interfaces.
-* **`tailwindcss`**: Utility-first CSS framework for custom UI design.
-* **`@tailwindcss/vite`**: Official Vite plugin for Tailwind CSS v4 integration.
+## 📁 Project Structure
 
-### 🛠️ Frontend Utilities
-* **`axios`**: Promise-based HTTP client for making API requests to the FastAPI backend.
-* **`lucide-react`**: Flexible and lightweight icon set optimized for React applications.
+- `backend/` — FastAPI server, agent logic, database layer, RAG, and tools.
+  - `app.py` — API routes, CORS config, SSE chat streaming, image generation, uploads.
+  - `agent.py` — LangGraph workflow and model selection logic.
+  - `database.py` — SQLite models and CRUD helpers.
+  - `rag.py` — document ingestion, chunking, embeddings, and retrieval.
+  - `tools.py` — agent tools for web search, memory, calculator, weather, stock, and document lookups.
+  - `test.py` — small backend test script.
+- `frontend/` — Vite + React client application.
+  - `src/` — app layout, chat UI, sidebar, message input, API service layer.
+- `data/` — runtime SQLite data storage.
+- `uploads/` — uploaded user documents.
+- `chroma_db/` — persistent vector store files for document embeddings.
+- `requirements.txt` — Python dependencies.
+- `frontend/package.json` — frontend package setup and scripts.
 
----
+## ⚙️ Installation & Setup
 
-## 🚀 Environment Setup
+### Prerequisites
 
-### Backend Setup
+- Python 3.10+
+- Node.js 18+
+- npm
+- Poppler and Tesseract OCR for scanned PDF processing in `backend/rag.py`
+
+### 1) Clone and install backend dependencies
+
 ```bash
-# Activate your Conda environment
-conda activate NexaAI
-
-# Install Python dependencies
+cd NexaAI_A-Smart-Chatbot
 pip install -r requirements.txt
+```
+
+### 2) Configure environment variables
+
+Create a `.env` file in the project root with the required keys:
+
+```env
+GROQ_API_KEY=your_groq_api_key
+HF_TOKEN=your_huggingface_token
+GOOGLE_API_KEY=your_google_api_key
+TAVILY_API_KEY=your_tavily_api_key
+OPENWEATHER_API_KEY=your_openweather_api_key
+ALPHA_VANTAGE_API_KEY=your_alpha_vantage_api_key
+```
+
+> Keep the `.env` file local to your machine and do not commit secrets.
+
+### 3) Install frontend dependencies
+
+```bash
+cd frontend
+npm install
+```
+
+### 4) Start the backend
+
+```bash
+cd backend
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 5) Start the frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+The frontend typically runs on `http://localhost:5173` and the backend on `http://localhost:8000`.
+
+## 🚀 Usage
+
+1. Open the frontend in the browser.
+2. Start a new conversation from the sidebar.
+3. Ask a question directly or upload a document for grounded answers.
+4. For content that requires current information, the agent can use Tavily web search.
+5. Use text prompts, document analysis, and image generation depending on the request.
+
+## 🔌 API / Tools
+
+The backend exposes these key routes:
+
+- `GET /` — health check.
+- `GET /conversations` — list conversation threads.
+- `GET /history/{thread_id}` — get prior chat history for a thread.
+- `POST /upload` — upload a supported document file and index it into the RAG store.
+- `POST /chat/stream` — stream AI responses using Server-Sent Events.
+- `POST /generate-image` — generate an image from a text prompt.
+
+The agent also includes runtime tools for:
+
+- `calculator` — safe in-process math evaluation
+- `search_uploaded_document` — retrieve relevant document chunks from ChromaDB
+- `web_search` — Tavily-powered search
+- `remember_fact` / `recall_memory` — per-thread memory persistence
+- `get_stock_price` — Alpha Vantage quote lookup
+- `get_weather` — OpenWeather lookup
+
+## 👨‍💻 Author
+
+Tayyaba Akhter
