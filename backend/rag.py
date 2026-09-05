@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import List
 from dotenv import load_dotenv
 import os
+import shutil
 import certifi
 import pytesseract
 from pdf2image import convert_from_path
@@ -32,12 +33,20 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pypdf import PdfReader
 import docx2txt
 
-# Explicitly configure your exact system paths for Poppler and Tesseract
-POPPLER_BIN_PATH = r"C:\Program Files\Release-26.02.0-0\poppler-26.02.0\Library\bin"
-TESSERACT_EXE = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# Prefer environment overrides, then locate installed OS binaries, and only fall back
+# to Windows-specific paths for local desktop development.
+TESSERACT_EXE = os.getenv("TESSERACT_EXE") or shutil.which("tesseract") or r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+POPPLER_BIN_PATH = os.getenv("POPPLER_BIN_PATH")
 
-# Point pytesseract directly to the executable
-pytesseract.pytesseract.tesseract_cmd = TESSERACT_EXE
+if not POPPLER_BIN_PATH:
+    pdftoppm = shutil.which("pdftoppm")
+    if pdftoppm:
+        POPPLER_BIN_PATH = str(Path(pdftoppm).parent)
+    else:
+        POPPLER_BIN_PATH = r"C:\Program Files\Release-26.02.0-0\poppler-26.02.0\Library\bin"
+
+if TESSERACT_EXE:
+    pytesseract.pytesseract.tesseract_cmd = TESSERACT_EXE
 
 # Ensure required local directories exist
 Path("uploads").mkdir(exist_ok=True)       # Directory for temporary uploaded user files
@@ -78,11 +87,15 @@ def read_file_text(file_path: str) -> str:
             print(f"[OCR] PDF {path.name} appears image-based. Running Tesseract OCR...")
             
             try:
-                images = convert_from_path(file_path, poppler_path=POPPLER_BIN_PATH)
+                convert_kwargs = {}
+                if POPPLER_BIN_PATH:
+                    convert_kwargs["poppler_path"] = POPPLER_BIN_PATH
+
+                images = convert_from_path(file_path, **convert_kwargs)
                 ocr_text = ""
                 for img in images:
                     ocr_text += pytesseract.image_to_string(img) + "\n"
-                
+
                 if ocr_text.strip():
                     return ocr_text.strip()
             except Exception as ocr_err:
